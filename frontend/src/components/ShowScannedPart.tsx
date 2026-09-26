@@ -22,15 +22,15 @@ export default function ShowScannedPart() {
                 <div>
                     <p className="text-xs font-semibold uppercase tracking-wider text-blue-600">
                     Assembly Dashboard
-                </p>
+                    </p>
 
-                <h1 className="mt-1 text-2xl font-bold text-slate-900">
-                    Completed Assemblies
-                </h1>
+                    <h1 className="mt-1 text-2xl font-bold text-slate-900">
+                        Completed Assemblies
+                    </h1>
 
-                <p className="mt-1 text-sm text-slate-500">
-                    Overview of completed assemblies and their scanned components.
-                </p>
+                    <p className="mt-1 text-sm text-slate-500">
+                        Overview of completed assemblies and their scanned components.
+                    </p>
                 </div>
 
                 <div>
@@ -230,7 +230,7 @@ function AssemblyCard({
                         {assembly.parts.map((part) => (
                             <div
                                 key={part.barcode}
-                                className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
+                                className="rounded-lg  border border-slate-200 bg-blue-white p-4 shadow-sm"
                             >
 
                                 <div className="mb-3 flex items-center justify-between">

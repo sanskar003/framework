@@ -1,0 +1,20 @@
+### Test Add Part
+POST https://congenial-lamp-g4r7p5xvwg5x2v6w5-5000.app.github.dev/api/assembly/FRAME-000127/parts
+Content-Type: application/json
+
+{
+  "childBarcode": "LED-001776"
+}
+
+### Test get request
+GET https://congenial-lamp-g4r7p5xvwg5x2v6w5-5000.app.github.dev/api/assembly/FRAME-000126
+Content-Type: application/json 
+
+
+### Test product
+GET https://congenial-lamp-g4r7p5xvwg5x2v6w5-5000.app.github.dev/api/product/REMOTE-CONTROL-V1
+Content-Type: application/json 
+
+### Test part
+GET  https://congenial-lamp-g4r7p5xvwg5x2v6w5-5000.app.github.dev/api/part/PCB-004588
+Content-Type: application/json

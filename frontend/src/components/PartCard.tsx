@@ -1,21 +1,34 @@
-import type { Part } from "../types/assembly";
+import type { Part, Product } from "../types/assembly";
 
 interface PartCardProps {
   part: Part;
   scannedBarcode?: string;
+  productImages: Product | null;
 }
 
-export default function PartCard({ part, scannedBarcode }: PartCardProps) {
+
+export default function PartCard({ part, scannedBarcode, productImages }: PartCardProps) {
+  const partImage = productImages?.images.find(
+    (images) => images.imageType === part?.partType
+  )
 
   const isCompleted = Boolean(scannedBarcode)
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-2.5 shadow-sm">
+    <div className="rounded-lg border border-slate-200 bg-white p-2.5 sm:p-2.5 md:p-1 lg:p-2.5 shadow-sm">
 
-      <div className="flex h-24 items-center justify-center rounded-md bg-slate-100">
-        <span className="text-xs font-medium text-slate-400">
-          Part Image
-        </span>
+      <div className="flex h-24 items-center justify-center overflow-hidden rounded-md bg-slate-100">
+        {partImage ? (
+          <img
+            className="h-full w-full object-contain"
+            src={partImage.imageUrl}
+            alt={partImage.imageType}
+          />
+        ) : (
+          <span className="text-xs font-medium text-slate-400">
+            Part Image
+          </span>
+        )}
       </div>
 
       <h3 className="mt-2 truncate text-xs font-semibold text-slate-900">
@@ -27,11 +40,10 @@ export default function PartCard({ part, scannedBarcode }: PartCardProps) {
       </p>
 
       <div
-        className={`mt-2 rounded-md px-2 py-1.5 text-center text-[11px] font-semibold ${
-          isCompleted
+        className={`mt-2 rounded-md px-2 py-1.5 text-center text-[11px] font-semibold ${isCompleted
             ? "bg-green-100 text-green-700"
             : "bg-yellow-100 text-yellow-700"
-        }`}
+          }`}
       >
         {isCompleted ? "✓ COMPLETE" : "○ PENDING"}
       </div>

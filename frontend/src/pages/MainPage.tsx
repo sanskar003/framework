@@ -5,6 +5,7 @@ import { useAssemblyStore } from "../store/assemblyStore";
 import { useScannerStore } from "../store/scannerStore";
 import AssemblyView from "../components/AssemblyView";
 import Scanner from "../components/Scanner";
+import { getProductByProductCode } from "../services/api";
 
 
 export type completedAssembly = {
@@ -47,7 +48,7 @@ const isCompleted = useAssemblyStore(
 const setIsCompleted = useAssemblyStore(
   (state) => state.setIsCompleted
 )
- 
+
 
   useEffect(() => {
   if (!isCompleted) return;
@@ -85,33 +86,37 @@ const setIsCompleted = useAssemblyStore(
         <div>
           <p className="flex gap-2 text-black/50">
           {parents.map((val) => (
-            <p>{val.barcode}</p>
+            <span key={val.barcode}>{val.barcode}</span>
           ))}
           </p>
           <p className="flex gap-2 text-black/50 text-xs">
           {parts.map((val) => (
-            <p>{val.barcode}</p>
+            <span key={val.barcode}>{val.barcode}</span>
           ))}
           </p> 
         </div>
-        <div>
+        <div className="flex gap-3">
             <Link to="/dashboard"
             className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800">
                 Dashboard
+            </Link>
+            <Link to="/upload"
+            className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800">
+                Product Upload
             </Link>
         </div>
       </header>
 
 
       {/* MAIN CONTENT */}
-      <div className="grid min-h-0 flex-1 grid-cols-2 gap-4 p-4">
+      <div className="grid min-h-0 flex-1 grid-cols-1 sm:grid-cols-2  gap-4 p-4">
 
         {/* LEFT - PRODUCT */}
         <AssemblyView parts={parts}/>
 
 
         {/* RIGHT - SCAN */}
-        <section className="flex min-h-0 flex-col rounded-2xl bg-white p-5 shadow-sm">
+        <section className="flex min-h-fit flex-col rounded-2xl bg-white p-5 shadow-sm">
 
           <h2 className="mb-4 text-lg font-semibold text-slate-900">
             Scan Station
@@ -133,7 +138,7 @@ const setIsCompleted = useAssemblyStore(
 
             {currentAssembly && (
               <p className="text-xs text-slate-500">
-                {currentAssembly.barcode}
+                {currentAssembly.parentBarcode}
               </p>
             )}
 
@@ -144,7 +149,7 @@ const setIsCompleted = useAssemblyStore(
          <Scanner/>
 
           {/* SCANNED PARTS */}
-          <div className="min-h-0 flex-1">
+          <div className="min-h-fit flex-1">
 
             <div className="mb-3 flex items-center justify-between">
 
@@ -171,7 +176,7 @@ const setIsCompleted = useAssemblyStore(
 
               ) : (
 
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-2">
                 {scannedParts.map((part) => (
                   <div
                     key={part.barcode}
@@ -186,10 +191,10 @@ const setIsCompleted = useAssemblyStore(
                         {part.barcode}
                       </p>
                     </div>
-
-                    <span className="rounded-full bg-green-100 px-2 py-1 text-[10px] font-semibold text-green-700">
-                      COMPLETE
+                    <span className="rounded-full bg-green-100 px-1 py-1 text-[10px] font-semibold text-green-700">
+                      ✔
                     </span>
+
                   </div>
                 ))}
               </div>

@@ -1,11 +1,14 @@
 import { create } from "zustand";
-import { parents } from "../data/mockPart";
-import { findPartByBarcode, findProduct, validateChildPart } from "../services/helper";
+import { getAssemblyByParentBarcode, addPartToAssembly, getProductByProductCode } from "../services/api";
 import { useAssemblyStore } from "./assemblyStore";
+
+// import { parents } from "../data/mockPart";
+// import { findPartByBarcode, findProduct, validateChildPart } from "../services/helper";
 
 interface ScannerStore {
   barcode: string;
   message: string;
+  isProcessing: boolean;
 
   setBarcode: (barcode: string) => void;
   setMessage: (message: string) => void;
@@ -20,6 +23,7 @@ interface ScannerStore {
 export const useScannerStore = create<ScannerStore>((set) => ({
   barcode: "",
   message: "",
+  isProcessing: false,
 
   setBarcode: (barcode) =>
     set({
@@ -41,89 +45,97 @@ export const useScannerStore = create<ScannerStore>((set) => ({
       message: "",
     }),
 
-  scanParent: () => {
-    const barcode = useScannerStore.getState().barcode;
+  scanParent: async () => {
+  const barcode = useScannerStore.getState().barcode;
 
-    const parent = parents.find(
-      (parent) => parent.barcode === barcode
-    );
-
-    if (!parent) {
+  try {
+    const response = await getAssemblyByParentBarcode(barcode);
+    const assembly = response.data;
+    if (assembly.status === "COMPLETE") {
       set({
-        message: "Parent part not found.",
+        message: "Assembly is completed. Scan next Parent part",
+        barcode: "",
       });
-
+      
       return;
     }
 
-    const { completedAssemblies, setCurrentAssembly, setScannedParts } = useAssemblyStore.getState()
-
-    const alreadyCompleted = completedAssemblies.some(
-      (assembly) => assembly.parentBarcode === parent.barcode
-    )
-    if(alreadyCompleted){
-      set({ message: "Parent is already scanned", barcode: "" })
-      return;
-    }
-
-    setCurrentAssembly(parent);
+    const productResponse = await getProductByProductCode(assembly.productCode)
+    const product = productResponse.data
+    console.log("product: ",product)
+    
+    console.log("Assembly response:", response);
+    const { setCurrentAssembly, setScannedParts, setProduct } = useAssemblyStore.getState();
+    setCurrentAssembly(assembly);
     setScannedParts([]);
-
+    setProduct(product)
     set({
       barcode: "",
-      message: `Assembly ${parent.assemblyNumber} selected successfully.`,
-    });
-  },
-
-  scanChild: () => {
-    const barcode = useScannerStore.getState().barcode;
-    const { currentAssembly, scannedParts, completedAssemblies, setScannedParts, setIsCompleted, addCompletedAssembly } = useAssemblyStore.getState();
-
-    const part = findPartByBarcode(barcode);
-    if(!part){
-      set({ message: "Barcode not found" })
-      return;
-    }
-
-    if(!currentAssembly){
-      set({ message: "Please scan the Parent part first" });
-      return;
-    }
-
-    const product = findProduct(currentAssembly.productCode);
-    if(!product){
-      set({ message: "Product configuration not found" });
-      return;
-    }
-
-    const validateMessage = validateChildPart({ part, product, scannedParts, completedAssemblies });
-    if(validateMessage){
-      set({ message: validateMessage });
-      return;
-    }
-
-    setScannedParts((currentParts) => {
-      const updatedParts = [...currentParts, part];
-      const isNowCompleted = updatedParts.length === product.requiredPartTypes.length;
-
-      if(isNowCompleted){
-        setIsCompleted(true);
-        set({ message : "Assembly completed successfully" });
-
-        addCompletedAssembly({
-          assemblyNumber: currentAssembly.assemblyNumber,
-          parentBarcode: currentAssembly.barcode,
-          parts: updatedParts,
-          completedAt: new Date(),
-        })
-      }else{
-        set({ message: `${part.partType} accepted successfully` })
-      }
-
-      return updatedParts;
+      message: "",
     });
 
-    set({ barcode: "" });
+  } catch (error) {
+    console.log("Error:", error);
+    set({
+      message: "Unable to find assembly",
+      barcode: "",
+    });
   }
+},
+
+scanChild: async () => {
+  const barcode = useScannerStore.getState().barcode;
+
+  const {
+    currentAssembly,
+    setCurrentAssembly,
+    setScannedParts,
+    setIsCompleted,
+  } = useAssemblyStore.getState();
+
+  if (!currentAssembly) {
+    set({
+      message: "Please scan the Parent part first",
+    });
+    return;
+  }
+
+  set({isProcessing: true})
+  try {
+    const response = await addPartToAssembly(
+      currentAssembly.parentBarcode,
+      barcode
+    );
+
+    console.log("Child response:", response);
+    const assembly = response.data.assembly;
+
+    setCurrentAssembly(assembly);
+    setScannedParts(assembly.children);
+    set({barcode: ""})
+
+    if(assembly.status === "COMPLETE"){
+      setIsCompleted(true);
+      set({message: "Assembly completed successfully"})
+    }else{
+      set({message: "Part added successfully"})
+    }
+
+  } catch (error) {
+    console.log("Child scan error:", error);
+
+     set({
+      message: error instanceof Error
+        ? error.message
+        : "Unable to add part",
+      barcode: "",
+  });
+  } finally {
+    set({ isProcessing: false })
+  }
+},
+  
+  setIsProcessing: (value: boolean) => 
+    set({ isProcessing: value }),
 
 }));

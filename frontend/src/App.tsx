@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import MainPage from "./pages/MainPage";
 import ShowScannedPart from "./components/ShowScannedPart";
+import ProductImageUpload from "./components/ProductImageUpload";
 
 export default function App(){
   return(
@@ -8,6 +9,7 @@ export default function App(){
       <Routes>
         <Route path="/" element={ <MainPage/> }/>
         <Route path="/dashboard" element={ <ShowScannedPart/> }/>
+        <Route path="/upload" element={ <ProductImageUpload/> }/>
       </Routes>
     </BrowserRouter>
   )

@@ -1,5 +1,6 @@
 import { useAssemblyStore } from "../store/assemblyStore";
 import { useScannerStore } from "../store/scannerStore";
+import ButtonLoader from "./ButtonLoader";
 
 function Scanner() {
   const barcode = useScannerStore(
@@ -16,25 +17,29 @@ function Scanner() {
 
   const scanParent = useScannerStore(
     (state) => state.scanParent
-  )
+  );
 
   const scanChild = useScannerStore(
     (state) => state.scanChild
-  )
+  );
 
   const currentAssembly = useAssemblyStore(
     (state) => state.currentAssembly
-  )
+  );
 
+  const isProcessing = useScannerStore(
+    (state) => state.isProcessing
+  )
 
   return (
     <div className="mb-4">
 
-      <label className="mb-2 block text-sm font-medium text-slate-700">
+      <label className="mb-2 text-sm font-medium text-slate-700">
         Scan Barcode
       </label>
 
-      <div className="flex gap-2">
+      <div>Barcode scanner view</div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 gap-1 sm:gap-2">
 
         <input
           type="text"
@@ -49,9 +54,10 @@ function Scanner() {
 
         <button
           onClick={currentAssembly ? scanChild : scanParent}
-          className="rounded-xl bg-blue-600 px-6 font-semibold text-white hover:bg-blue-700"
+          disabled={isProcessing}
+          className="rounded-xl w-[100px] h-[45px] bg-blue-400 px-6 py-2 font-semibold text-white shadow-[0_3px_0_#1e40af] transition-all hover:bg-blue-500 active:translate-y-[2px] active:shadow-none cursor-pointer"
         >
-          Scan
+          {isProcessing ? <ButtonLoader/> : "Scan"}
         </button>
 
       </div>

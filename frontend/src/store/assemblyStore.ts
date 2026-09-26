@@ -1,24 +1,27 @@
 import { create } from "zustand";
-import { parents } from "../data/mockPart";
-import type { Part } from "../types/assembly";
+// import { parents } from "../data/mockPart";
+import { persist } from "zustand/middleware";
+import type { Assembly, Part, Product } from "../types/assembly";
 
-type Parent = (typeof parents)[number];
+// type Parent = (typeof parents)[number];
 
 export type CompletedAssembly = {
   assemblyNumber: string;
   parentBarcode: string;
+  productCode: string;
   parts: Part[];
   completedAt: Date;
 };
 
 interface AssemblyStore {
-  currentAssembly: Parent | null;
+  currentAssembly: Assembly | null;
   scannedParts: Part[];
 
   isCompleted: boolean;
   completedAssemblies: CompletedAssembly[];
+  product: Product | null;
 
-  setCurrentAssembly: (assembly: Parent | null) => void;
+  setCurrentAssembly: (assembly: Assembly | null) => void;
 
   setScannedParts: (
     parts: Part[] | ((currentParts: Part[]) => Part[])
@@ -26,41 +29,90 @@ interface AssemblyStore {
 
   setIsCompleted: (value: boolean) => void;
 
-  addCompletedAssembly: (
-    assembly: CompletedAssembly
-  ) => void;
+  addCompletedAssembly: (assembly: CompletedAssembly) => void;
+
+  setProduct: (product: Product | null) => void;
 }
 
-export const useAssemblyStore = create<AssemblyStore>((set) => ({
-  currentAssembly: null,
-  scannedParts: [],
 
-  isCompleted: false,
-  completedAssemblies: [],
+export const useAssemblyStore = create<AssemblyStore>()(
+  persist(
+    (set) => ({
+      currentAssembly: null,
+      scannedParts: [],
 
-  setCurrentAssembly: (assembly) =>
-    set({
-      currentAssembly: assembly,
-    }),
+      isCompleted: false,
+      completedAssemblies: [],
+      product: null,
 
-  setScannedParts: (parts) =>
-    set((state) => ({
-      scannedParts:
-        typeof parts === "function"
-          ? parts(state.scannedParts)
-          : parts,
-    })),
+      setCurrentAssembly: (assembly) =>
+        set({
+          currentAssembly: assembly,
+        }),
 
-  setIsCompleted: (value) =>
-    set({
-      isCompleted: value,
-    }),
+      setScannedParts: (parts) =>
+        set((state) => ({
+          scannedParts:
+            typeof parts === "function"
+              ? parts(state.scannedParts)
+              : parts,
+        })),
 
-  addCompletedAssembly: (assembly) =>
-    set((state) => ({
-      completedAssemblies: [
-        ...state.completedAssemblies,
-        assembly,
-      ],
-    })),
-}));
+      setIsCompleted: (value) =>
+        set({
+          isCompleted: value,
+        }),
+
+      addCompletedAssembly: (assembly) =>
+        set((state) => ({
+          completedAssemblies: [
+            ...state.completedAssemblies,
+            assembly,
+          ],
+        })),
+
+      setProduct: (product) =>
+        set({ product })
+
+    }), { name: "assembly-tracker-storage" }
+  )
+);
+
+
+// export const useAssemblyStore = create<AssemblyStore>((set) => ({
+//   currentAssembly: null,
+//   scannedParts: [],
+
+//   isCompleted: false,
+//   completedAssemblies: [],
+//   product: null,
+
+//   setCurrentAssembly: (assembly) =>
+//     set({
+//       currentAssembly: assembly,
+//     }),
+
+//   setScannedParts: (parts) =>
+//     set((state) => ({
+//       scannedParts:
+//         typeof parts === "function"
+//           ? parts(state.scannedParts)
+//           : parts,
+//     })),
+
+//   setIsCompleted: (value) =>
+//     set({
+//       isCompleted: value,
+//     }),
+
+//   addCompletedAssembly: (assembly) =>
+//     set((state) => ({
+//       completedAssemblies: [
+//         ...state.completedAssemblies,
+//         assembly,
+//       ],
+//     })),
+
+//     setProduct: (product) => 
+//       set({ product })
+// }));
